@@ -1,5 +1,5 @@
 title: Blobtools
-description: Application for the visualisation of draft genome assemblies and general QC
+description: A modular command-line solution for visualisation, quality control and taxonomic partitioning of genome datasets
 google_analytics: 
 show_downloads: true
 theme: jekyll-theme-slate
