@@ -11,7 +11,7 @@ usage() { echo "Usage: $0 [-r reference.fasta] [-F forward.fq ] [-R reverse.fast
 
 set -euo pipefail
 IFS=$'\n\t'
-while getopts ":r:F:R:o:h" opt; do
+while getopts ":r:F:R:o:d:t:h" opt; do
     case $opt in
 	h) usage
 	   ;;	
@@ -25,6 +25,8 @@ while getopts ":r:F:R:o:h" opt; do
 	   ;;
 	o) OUTDIR="$OPTARG"
 	   ;;
+	t) THREADS="$OPTARG"
+	   ;;
 	\?) echo "Invalid option -$OPTARG" >&2
 	    ;;
     esac
@@ -37,10 +39,12 @@ echo "BLAST database search path: $BLASTDB"
 samtools --version | grep samtools 
 blastn -version | grep "Package: blast" 
 metaspades.py --version |& grep metaSPAdes # its on stderr
-bwa |& grep "Version:"
-
+echo "checking bwa"
+#bwa |& grep "Version:"
+echo "setting log"
 LOG=${OUTDIR}blob.log
 
+echo "making outdir"
 mkdir $OUTDIR
 echo "index and map reads to reference" 
 bwa index $REF >> $LOG 2>&1
@@ -60,19 +64,19 @@ echo " assembling raw reads and subset reads with metaspades"
 SPADES_ALL=${OUTDIR}metaspades_all/
 SPADES_MAPPED=${OUTDIR}metaspades_mapped/
 SPADES_UNMAPPED=${OUTDIR}metaspades_unmapped/
-metaspades.py --pe1-1 $READS1 --pe1-2 $READS2 -o $SPADES_ALL
-metaspades.py --pe1-1 $READS1_MAPPED --pe1-2 $READS2_MAPPED -o $SPADES_MAPPED
-metaspades.py --pe1-1 $READS1_UNMAPPED --pe1-2 $READS2_UNMAPPED -o $SPADES_UNMAPPED
+metaspades.py --pe1-1 $READS1 --pe1-2 $READS2 -o $SPADES_ALL -t $THREADS
+metaspades.py --pe1-1 $READS1_MAPPED --pe1-2 $READS2_MAPPED -o $SPADES_MAPPED -t $THREADS
+metaspades.py --pe1-1 $READS1_UNMAPPED --pe1-2 $READS2_UNMAPPED -o $SPADES_UNMAPPED -t $THREADS
 
 echo "Running blast for mapped"
 HITS_MAPPED=${OUTDIR}mapped_blastn_nt.out
 HITS_UNMAPPED=${OUTDIR}unmapped_blastn_nt.out
 HITS_ALL=${OUTDIR}all_blastn_nt.out
-blastn -db $BDB -query ${SPADES_MAPPED}contigs.fasta -out $HITS_MAPPED -outfmt '6 qseqid staxids bitscore std sscinames sskingdoms stitle' -num_threads 12
+blastn -db $BDB -query ${SPADES_MAPPED}contigs.fasta -out $HITS_MAPPED -outfmt '6 qseqid staxids bitscore std sscinames sskingdoms stitle' -num_threads 3
 echo "Running blast for unmapped"
-blastn -db $BDB -query ${SPADES_UNMAPPED}contigs.fasta -out $HITS_UNMAPPED -outfmt '6 qseqid staxids bitscore std sscinames sskingdoms stitle' -num_threads 12
+blastn -db $BDB -query ${SPADES_UNMAPPED}contigs.fasta -out $HITS_UNMAPPED -outfmt '6 qseqid staxids bitscore std sscinames sskingdoms stitle' -num_threads $THREADS
 echo "Running blast for all"
-blastn -db $BDB -query ${SPADES_ALL}contigs.fasta -out $HITS_ALL -outfmt '6 qseqid staxids bitscore std sscinames sskingdoms stitle' -num_threads 12
+blastn -db $BDB -query ${SPADES_ALL}contigs.fasta -out $HITS_ALL -outfmt '6 qseqid staxids bitscore std sscinames sskingdoms stitle' -num_threads $THREADS
 
 echo "running blobtools cmds"
 BLOB_ALL=${OUTDIR}blob_all/
