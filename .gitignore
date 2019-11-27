@@ -21,3 +21,4 @@ samtools/
 !blobplot.png
 *.sam
 
+ezblob/ref_*
