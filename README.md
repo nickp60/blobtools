@@ -64,12 +64,12 @@ Usage
 Docker
 ------
 
-We built a docker container to simplify the workflow.  `nickp60/ezblobtools` was built to streamline going directly from reads to blobs;  it contains NCBI's reference genome database, SKESA for assemblies, and samtools for generating the bam file that blobtools expects. It can be run as follows:
+We built a docker container called `ezblobtools` to simplify the workflow.  `nickp60/ezblobtools` was built to streamline going directly from reads to blobs;  it contains NCBI's reference genome database, SKESA for assemblies, and samtools for generating the bam file that blobtools expects. It can be run as follows:
 ```
 docker run --memory 16G --rm  -v $HOME:/inputdata/ nickp60/ezblobtools  -r /inputdata/path/to/reference.fasta -F /inputdata/reads_F.fq -R /inputdata/reads_R.fq -d ref_prok_rep_genomes -o /inputdata/path/to/results/ -t 2 -m 16
 ```
 
-- `--rm` means remove the instance after running
+- `--rm` means remove the docker instance after running
 - `--memory` docker memory allocation
 - `-v` sets the working volume bridging the host and container
 - `-r` reference genome
@@ -79,3 +79,10 @@ docker run --memory 16G --rm  -v $HOME:/inputdata/ nickp60/ezblobtools  -r /inpu
 - `-o` path to output dir
 - `-t` number of threads to use
 - `-m` memory allocated to SKESA
+
+
+Or, if you only have an assembly:
+
+```
+docker run --memory 16G --rm  -v $HOME:/inputdata/ nickp60/ezblobtools  -r /inputdata/path/to/reference.fasta -a /inputdata/path/to/assembly.fasta -d ref_prok_rep_genomes -o /inputdata/path/to/results/ -t 2 -m 16
+```
