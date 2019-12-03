@@ -64,11 +64,18 @@ Usage
 Docker
 ------
 
-A docker container can be build using the following command:
+We built a docker container to simplify the workflow.  `nickp60/ezblobtools` was built to streamline going directly from reads to blobs;  it contains NCBI's reference genome database, SKESA for assemblies, and samtools for generating the bam file that blobtools expects. It can be run as follows:
 ```
-     docker build -t drl/blobtools .
+docker run --memory 16G --rm  -v $HOME:/inputdata/ nickp60/ezblobtools  -r /inputdata/path/to/reference.fasta -F /inputdata/reads_F.fq -R /inputdata/reads_R.fq -d ref_prok_rep_genomes -o /inputdata/path/to/results/ -t 2 -m 16
 ```
-This docker image can be run with sample data as follows:
-```
-     docker run -v $PWD/example:/example/  -t  drl/blobtools ./blobtools create -i /example/assembly.fna -b /example/mapping_1.sorted.bam -t /example/blast.out -o /example/test
-```
+
+- `--rm` means remove the instance after running
+- `--memory` docker memory allocation
+- `-v` sets the working volume bridging the host and container
+- `-r` reference genome
+- `-F` Forward reads
+- `-R` Reverse reads (optional)
+- `-d` name of builtin database: ref_prok_rep_genomes
+- `-o` path to output dir
+- `-t` number of threads to use
+- `-m` memory allocated to SKESA
